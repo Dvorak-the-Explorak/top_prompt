@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# echo -e "WARNING This program is hella jank. \nSet the prompt string variables manually in filter_prompt.sh,\n\tthen delete this error line (in $0)." >&2  && exit
-
 
 if [ $# -eq 0 ] 
 then
@@ -39,40 +37,25 @@ tmux new-session -d -s $SESSION -x $width -y $height
 #	bottom pane (1) will be selected
 tmux split-window -v -l $(($height - 3))
 
-
-# ================================
-#			Bottom pane
-# ================================
-tmux send-keys "tty > /tmp/log" C-m
-
-
-# set the bottom pane to have no promptstring
-tmux send-keys "export PS1=''" C-m
+# Start a new screen session named the same as the tmux session
+#	runs on selected pane (bottom), that pane decides the screen dimensions
+tmux send-keys "screen -S $SESSION" C-m
 
 # tmux wait -S sends a message that the session is open
 #	(this should run inside the screens session)
-tmux send-keys "tmux wait -S ${SESSION}TTY" C-m
+tmux send-keys "tmux wait -S ${SESSION}Screen" C-m
 
-# Hide all our nastiness
+# Hide our nastiness
 tmux send-keys "clear" C-m
-
-# target is the tty we'll redirect stuff to
-target=$(cat /tmp/log)
-
-
-# ================================
-#			Top pane
-# ================================
 
 # Select the top pane
 tmux select-pane -t 0
 
-# Wait to make sure tty results are in
-tmux wait ${SESSION}TTY
+# Wait for session to open
+tmux wait ${SESSION}Screen
 
-# redirect stdout and stderr to other pane
-tmux send-keys "exec 2> >(tee ${target} | bash filter_prompt.sh >&2) >${target}" C-m
-tmux send-keys "" C-m
+# Connect top pane to the screen session
+tmux send-keys "screen -x $SESSION" C-m
 
 # Go into session
 tmux attach -t $SESSION
