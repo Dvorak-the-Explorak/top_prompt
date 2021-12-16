@@ -71,7 +71,7 @@ tmux select-pane -t 0
 tmux wait ${SESSION}TTY
 
 # redirect stdout and stderr to other pane
-tmux send-keys "exec 2> >(tee ${target} | ./filter_prompt.sh >&2) >${target}" C-m
+tmux send-keys "exec 2> >(tee ${target} | bash filter_prompt.sh >&2) >${target}" C-m
 tmux send-keys "" C-m
 
 # Go into session
